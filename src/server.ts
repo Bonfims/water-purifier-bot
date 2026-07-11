@@ -20,6 +20,7 @@ import {
   createOpenRouterClient,
   createNoopLLMClient,
 } from "./adapters/llm/openrouter";
+import { executeActions } from "./executor";
 import type { SessionStore } from "./core/ports";
 import type { DataStore } from "./core/ports";
 import type { BotSession } from "./core/entities";
@@ -246,9 +247,10 @@ async function main() {
         ) {
           const body = (await req.json().catch(() => ({}))) as any;
           let contactId: string, text: string, contact: any;
+          let conversationId: string | undefined;
 
           if (body.message?.text) {
-            // Format 1: queue-level
+            // Format 1: queue-level triggerOutgoingWebhook
             contactId = body.contactId;
             text = body.message.text;
             contact = { id: body.contactId };
@@ -256,16 +258,14 @@ async function main() {
             // Format 2: WhatsApp via outbound worker
             contactId = body.contact_phone;
             text = body.text;
+            conversationId = body.conversation_id;
             contact = {
               id: body.contact_phone,
               name: body.contact_name,
               phone: body.contact_phone,
             };
           } else {
-            return json(
-              { error: "unknown payload format" },
-              400
-            );
+            return json({ error: "unknown payload format" }, 400);
           }
 
           const { actions, setTags, removeTags } = await processConversation(
@@ -274,13 +274,33 @@ async function main() {
             contact
           );
 
-          return json({ actions, setTags, removeTags });
+          // Envia replies de volta via API do nutalk-dev (send-message + tags)
+          const execResults = await executeActions({
+            contactId,
+            conversationId,
+            actions,
+            setTags,
+            removeTags,
+          });
+
+          console.log("[webhook]", {
+            contactId,
+            conversationId,
+            text: text?.slice(0, 50),
+            replies: actions.length,
+            setTags,
+            removeTags,
+            execResults,
+          });
+
+          return json({ actions, setTags, removeTags, execResults });
         }
 
         // POST /api/webhooks/schedulebot (custom endpoint for direct testing)
         if (method === "POST" && path === "/api/webhooks/schedulebot") {
           const body = (await req.json().catch(() => ({}))) as any;
           const contactId = body.contactId || body.contact_phone || "test";
+          const conversationId = body.conversation_id;
           const text = body.message?.text || body.text || "";
           const contact = body.contact || {
             id: contactId,
@@ -293,7 +313,22 @@ async function main() {
             contact
           );
 
-          return json({ actions, setTags, removeTags });
+          const execResults = await executeActions({
+            contactId,
+            conversationId,
+            actions,
+            setTags,
+            removeTags,
+          });
+
+          console.log("[schedulebot-webhook]", {
+            contactId,
+            text: text?.slice(0, 50),
+            replies: actions.length,
+            execResults,
+          });
+
+          return json({ actions, setTags, removeTags, execResults });
         }
 
         return json({ error: "not found" }, 404);
