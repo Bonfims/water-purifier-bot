@@ -217,8 +217,27 @@ export function createBot(
       };
     }
 
-    // __START__ signal
+    // __START__ signal — auto-identify if contact phone is already known
     if (msg === "__START__") {
+      const contactPhone = (session?.contact?.id || "").replace(/\D/g, "");
+      if (contactPhone.length >= 10) {
+        const contactName = session?.contact?.name || "";
+        const customer = await customerService.findOrCreate(contactPhone, contactName || undefined);
+        const isAdmin = customer.isAdmin || adminPhones.includes(contactPhone);
+        const contact = { id: contactPhone, name: customer.name, phone: contactPhone };
+        if (isAdmin) {
+          return {
+            replies: [txt(`👋 Ola, ${customer.name}!`), ...adminMainMenu(customer.name)],
+            newSession: { state: "admin_menu", tries: 0, entities: { _phone: contactPhone }, contact },
+            setTags: [], removeTags: [],
+          };
+        }
+        return {
+          replies: customerMainMenu(customer.name),
+          newSession: { state: "customer_menu", tries: 0, entities: { _phone: contactPhone }, contact },
+          setTags: [], removeTags: [],
+        };
+      }
       return {
         replies: [WELCOME],
         newSession: { state: "identify", tries: 0, entities: {}, contact: session?.contact || { id: "", name: "", phone: "" } },
@@ -285,17 +304,18 @@ export function createBot(
 
     if (globalIntent === "saudacao") {
       const contact = s.contact;
+      const phone = s.entities._phone || contact.id?.replace(/\D/g, "") || "";
       const customer = contact.id ? await store.getCustomer(contact.id) : null;
       if (customer?.isAdmin || adminPhones.includes(contact.id)) {
         return {
-          replies: [txt(`👋 Olá, ${customer?.name || contact.name}! Bem-vindo de volta."`), ...adminMainMenu(customer?.name || "")],
-          newSession: { state: "admin_menu", tries: 0, entities: {}, contact },
+          replies: [txt(`👋 Olá, ${customer?.name || contact.name}! Bem-vindo de volta.`), ...adminMainMenu(customer?.name || "")],
+          newSession: { state: "admin_menu", tries: 0, entities: { _phone: phone }, contact },
           setTags: [], removeTags: [],
         };
       }
       return {
         replies: customerMainMenu(customer?.name || contact.name || "Cliente"),
-        newSession: { state: "customer_menu", tries: 0, entities: {}, contact },
+        newSession: { state: "customer_menu", tries: 0, entities: { _phone: phone }, contact },
         setTags: [], removeTags: [],
       };
     }
@@ -439,7 +459,16 @@ export function createBot(
   // Handler: Identify (phone number entry)
   // ═══════════════════════════════════════════════════════════════
   async function handleIdentify(s: BotSession, msg: string): Promise<ProcessResult> {
-    // Extract phone number
+    // Auto-identify: nutalk-dev already sends contact_phone in the webhook payload
+    const contactPhone = s.contact?.id?.replace(/\D/g, "") || "";
+    const contactName = s.contact?.name || "";
+
+    // If contact already has a valid phone, skip identification
+    if (contactPhone.length >= 10) {
+      return autoIdentify(s, contactPhone, contactName);
+    }
+
+    // Extract phone number from message text
     const phoneMatch = msg.replace(/\D/g, "");
     let phone = s.entities._phone || "";
 
@@ -463,10 +492,12 @@ export function createBot(
       };
     }
 
-    // Look up or create customer
-    const customer = await customerService.findOrCreate(phone, s.contact?.name);
-    const isAdmin = customer.isAdmin || adminPhones.includes(phone);
+    return autoIdentify(s, phone, contactName);
+  }
 
+  async function autoIdentify(s: BotSession, phone: string, contactName: string): Promise<ProcessResult> {
+    const customer = await customerService.findOrCreate(phone, contactName || undefined);
+    const isAdmin = customer.isAdmin || adminPhones.includes(phone);
     const updatedContact = { id: phone, name: customer.name, phone };
 
     if (isAdmin) {
