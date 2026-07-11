@@ -6,6 +6,7 @@ export const config = Object.freeze({
   redisUrl: process.env.REDIS_URL || "",
   apiToken: process.env.API_TOKEN || "",
   nutalkApiUrl: process.env.NUTALK_API_URL || "http://localhost:3001",
+  nutalkBotUrl: process.env.NUTALK_BOT_URL || "",
   llmApiKey: process.env.LLM_API_KEY || "",
   llmModel: process.env.LLM_MODEL || "openai/gpt-4o-mini",
   databaseUrl: process.env.DATABASE_URL || "",

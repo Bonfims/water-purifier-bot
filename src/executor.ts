@@ -105,6 +105,40 @@ export async function executeActions(payload: ExecutorPayload) {
         });
       }
     }
+
+    // Wake up default nutalk-bot when removing specialty tag (return to main bot)
+    const removedSpecialty = removeTags.find((t) => t.startsWith("specialty:"));
+    if (removedSpecialty && config.nutalkBotUrl) {
+      try {
+        const wakeRes = await fetch(config.nutalkBotUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: "__START__",
+            contact_phone: contactId,
+            contact_name: "",
+            channel: "whatsapp",
+            conversation_id: convId,
+          }),
+        });
+        results.push({
+          type: "wake_default_bot",
+          url: config.nutalkBotUrl,
+          status: wakeRes.status,
+        });
+        console.log(
+          `[executor] Woke default bot: ${config.nutalkBotUrl} status=${wakeRes.status}`
+        );
+      } catch (err: any) {
+        console.error("[executor] wake default bot failed:", err.message);
+        results.push({
+          type: "wake_default_bot",
+          url: config.nutalkBotUrl,
+          status: "error",
+          error: err.message,
+        });
+      }
+    }
   }
 
   return results;
