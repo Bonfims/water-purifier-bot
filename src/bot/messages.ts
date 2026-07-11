@@ -69,7 +69,7 @@ export function customerMainMenu(name: string): ReplyItem[] {
   return [
     txt(`👋 Olá, *${name}*! Como posso ajudar?`),
     listMessage(
-      "Escolha uma opção:\n1 - Agendar Manutenção\n2 - Meus Equipamentos\n3 - Meus Agendamentos\n4 - Falar com Atendente",
+      "Escolha uma opção:\n1 - Agendar Manutenção\n2 - Meus Equipamentos\n3 - Meus Agendamentos\n4 - Falar com Atendente\n5 - Sair da Demonstração",
       "Menu Principal",
       "ScheduleBot 💧",
       "Opções",
@@ -78,6 +78,7 @@ export function customerMainMenu(name: string): ReplyItem[] {
         { id: "ver_equipamentos", title: "🔧 Meus Equipamentos" },
         { id: "ver_agendamentos", title: "📋 Meus Agendamentos" },
         { id: "atendente", title: "💬 Falar com Atendente" },
+        { id: "sair_demo", title: "🔙 Sair da Demonstração" },
       ]
     ),
   ];
@@ -102,6 +103,7 @@ export function adminMainMenu(name: string): ReplyItem[] {
         { id: "admin_cancelar", title: "❌ Cancelar Agendamento" },
         { id: "admin_buscar_cliente", title: "🔍 Buscar Cliente" },
         { id: "menu_cliente", title: "👤 Menu Cliente" },
+        { id: "sair_demo", title: "🔙 Sair da Demonstração" },
       ]
     ),
   ];

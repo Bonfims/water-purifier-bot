@@ -62,6 +62,7 @@ const INTENTS = [
   { name: "confirmar", synonyms: ["confirmar", "confirmar agendamento", "confirmo agendamento"] },
   { name: "cancelar_agendamento", synonyms: ["cancelar agendamento", "cancelar marcacao", "desmarcar agendamento", "cancelar manutencao"] },
   { name: "equipamento_info", synonyms: ["info equipamento", "detalhes equipamento", "sobre equipamento"] },
+  { name: "sair_demo", synonyms: ["sair da demo", "sair demo", "encerrar demo", "voltar pro bot", "voltar para o bot", "bot principal", "bot padrao", "menu principal", "voltar menu principal"] },
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -112,6 +113,20 @@ const GLOBALS: Record<string, string> = {
   "boa noite": "saudacao",
   "ajuda": "ajuda",
   "help": "ajuda",
+  // Exit demo — volta pro bot principal (nutalk-bot)
+  "sair da demo": "sair_demo",
+  "sair demo": "sair_demo",
+  "sair da demonstracao": "sair_demo",
+  "sair demonstracao": "sair_demo",
+  "encerrar demo": "sair_demo",
+  "encerrar demonstracao": "sair_demo",
+  "voltar para o bot": "sair_demo",
+  "voltar pro bot": "sair_demo",
+  "bot principal": "sair_demo",
+  "bot padrao": "sair_demo",
+  "bot padrão": "sair_demo",
+  "voltar menu principal": "sair_demo",
+  "menu principal": "sair_demo",
 };
 
 // ═══════════════════════════════════════════════════════════════════
@@ -245,6 +260,18 @@ export function createBot(
         replies: [GOODBYE],
         newSession: null,
         setTags: [], removeTags: [],
+      };
+    }
+
+    if (globalIntent === "sair_demo") {
+      return {
+        replies: [
+          txt("🔙 Voce esta saindo da demonstracao de purificadores e voltando para o *assistente principal da Nutalk*.\n\nO bot principal pode te ajudar com outras demonstracoes, informacoes sobre a plataforma ou te conectar com um consultor humano."),
+          txt("Ate logo! 👋"),
+        ],
+        newSession: null,
+        setTags: [],
+        removeTags: ["specialty:water"],
       };
     }
 
@@ -508,6 +535,16 @@ export function createBot(
           newSession: { state: "human_name", tries: 0, entities: {}, contact },
           setTags: [], removeTags: [],
         };
+      case "sair_demo":
+        return {
+          replies: [
+            txt("🔙 Voce esta saindo da demonstracao de purificadores e voltando para o *assistente principal da Nutalk*.\n\nO bot principal pode te ajudar com outras demonstracoes, informacoes sobre a plataforma ou te conectar com um consultor humano."),
+            txt("Ate logo! 👋"),
+          ],
+          newSession: null,
+          setTags: [],
+          removeTags: ["specialty:water"],
+        };
       case "admin_menu": {
         const isAdmin = customer?.isAdmin || adminPhones.includes(phone);
         if (isAdmin) {
@@ -610,6 +647,16 @@ export function createBot(
           replies: [txt("👋 Claro! Qual o seu nome?")],
           newSession: { state: "human_name", tries: 0, entities: {}, contact },
           setTags: [], removeTags: [],
+        };
+      case "sair_demo":
+        return {
+          replies: [
+            txt("🔙 Saindo da demonstracao e voltando para o *assistente principal da Nutalk*."),
+            txt("Ate logo! 👋"),
+          ],
+          newSession: null,
+          setTags: [],
+          removeTags: ["specialty:water"],
         };
       default: {
         const nextTries = (s.tries || 0) + 1;
