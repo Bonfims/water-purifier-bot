@@ -278,6 +278,7 @@ async function main() {
           const execResults = await executeActions({
             contactId,
             conversationId,
+            channel: body.channel || "whatsapp",
             actions,
             setTags,
             removeTags,
@@ -316,6 +317,7 @@ async function main() {
           const execResults = await executeActions({
             contactId,
             conversationId,
+            channel: body.channel || "whatsapp",
             actions,
             setTags,
             removeTags,

@@ -14,6 +14,7 @@ const BASE = config.nutalkApiUrl;
 export interface ExecutorPayload {
   contactId: string;
   conversationId?: string;
+  channel?: string;
   actions: Array<{
     type: string;
     text?: string;
@@ -24,7 +25,7 @@ export interface ExecutorPayload {
 }
 
 export async function executeActions(payload: ExecutorPayload) {
-  const { contactId, conversationId, actions, setTags, removeTags } = payload;
+  const { contactId, conversationId, channel, actions, setTags, removeTags } = payload;
   const results: any[] = [];
   const convId = conversationId || contactId;
 
@@ -117,7 +118,7 @@ export async function executeActions(payload: ExecutorPayload) {
             text: "__START__",
             contact_phone: contactId,
             contact_name: "",
-            channel: "whatsapp",
+            channel: channel || "whatsapp",
             conversation_id: convId,
           }),
         });
