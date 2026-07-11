@@ -163,9 +163,12 @@ export function equipmentSelection(
 
 export function dateSelection(): ReplyItem {
   const d = dateOptions();
-  return btnMessage(
+  // WhatsApp: max 3 buttons → use list message for 4+ items
+  return listMessage(
     "📅 Para qual dia você quer agendar?",
-    "Escolha o dia:",
+    "Escolha o dia da manutenção:",
+    "Datas Disponíveis",
+    "Opções",
     [
       { id: `date_${d.hoje.key}`, title: `Hoje (${d.hoje.label})` },
       { id: `date_${d.amanha.key}`, title: `Amanhã (${d.amanha.label})` },
