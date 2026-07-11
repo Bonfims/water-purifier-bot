@@ -118,7 +118,11 @@ export function equipmentList(
 ): ReplyItem[] {
   if (equipment.length === 0) {
     return [
-      txt("🔧 Você ainda não possui equipamentos cadastrados.\n\nUse a opção *Agendar Manutenção* e cadastre seu primeiro purificador!"),
+      txt("🔧 Você ainda não possui equipamentos cadastrados."),
+      btnMessage("", "O que deseja fazer?", [
+        { id: "agendar", title: "📅 Agendar Manutenção" },
+        { id: "voltar", title: "↩ Menu" },
+      ]),
     ];
   }
 
@@ -132,7 +136,13 @@ export function equipmentList(
     return `*${i + 1}. ${eq.model}*\n   🔢 Série: ${eq.serialNumber}\n   📅 Última manutenção: ${last}\n   📆 Próxima: ${next}`;
   });
 
-  return [txt(`🔧 *Seus Purificadores*\n\n${lines.join("\n\n")}`)];
+  return [
+    txt(`🔧 *Seus Purificadores*\n\n${lines.join("\n\n")}`),
+    btnMessage("", "O que deseja fazer?", [
+      { id: "agendar", title: "📅 Agendar Manutenção" },
+      { id: "voltar", title: "↩ Menu" },
+    ]),
+  ];
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -292,6 +302,10 @@ export function appointmentsList(
   if (appointments.length === 0) {
     return [
       txt("📋 Você não possui agendamentos ativos no momento."),
+      btnMessage("", "O que deseja fazer?", [
+        { id: "agendar", title: "📅 Agendar Manutenção" },
+        { id: "voltar", title: "↩ Menu" },
+      ]),
     ];
   }
 
@@ -319,7 +333,15 @@ export function appointmentsList(
     return `${i + 1}. ${emoji} ${d}/${m}/${y} às ${app.timeSlot}${eq}\n   _${status}_`;
   });
 
-  return [txt(`${title}\n\n${lines.join("\n\n")}`)];
+  return [
+    txt(`${title}\n\n${lines.join("\n\n")}`),
+    txt("Para *cancelar* um agendamento, digite o número correspondente (ex: 1, 2)."),
+    btnMessage("", "Ou escolha uma ação:", [
+      { id: "agendar", title: "📅 Novo Agendamento" },
+      { id: "voltar", title: "↩ Voltar ao Menu" },
+      { id: "atendente", title: "💬 Falar com Atendente" },
+    ]),
+  ];
 }
 
 // ═══════════════════════════════════════════════════════════════════

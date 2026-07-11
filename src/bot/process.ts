@@ -169,6 +169,8 @@ const RETRY_STATES = new Set([
   "confirm_appointment",
   "new_equipment_model",
   "new_equipment_serial",
+  "view_appointments",
+  "view_equipment",
 ]);
 
 // ═══════════════════════════════════════════════════════════════════
@@ -537,7 +539,6 @@ export function createBot(
         return {
           replies: [
             ...equipmentList(equip),
-            txt("Digite *menu* para voltar ou *agendar* para marcar uma manutenção."),
           ],
           newSession: { state: "view_equipment", tries: 0, entities: s.entities, contact },
           setTags: [], removeTags: [],
@@ -552,10 +553,7 @@ export function createBot(
           })
         );
         return {
-          replies: [
-            ...appointmentsList(withModels),
-            txt("Para *cancelar* um agendamento, digite o número da lista.\nDigite *menu* para voltar."),
-          ],
+          replies: appointmentsList(withModels),
           newSession: { state: "view_appointments", tries: 0, entities: s.entities, contact },
           setTags: [], removeTags: [],
         };
