@@ -220,6 +220,11 @@ export function createBot(
     }
 
     // __START__ signal — auto-identify if contact phone is already known
+    // Dedup: se a sessao ja foi iniciada, ignora (evita mensagens duplicadas)
+    const existingState = (session?.state || "");
+    if (msg === "__START__" && (existingState === "customer_menu" || existingState === "admin_menu")) {
+      return { replies: [], newSession: session!, setTags: [], removeTags: [] };
+    }
     if (msg === "__START__") {
       const contactPhone = (session?.contact?.id || "").replace(/\D/g, "");
       if (contactPhone.length >= 10) {
